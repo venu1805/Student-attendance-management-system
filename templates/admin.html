@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — SmartAttend ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="sidebar-mobile-toggle" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-sm">
+          SA
+        </div>
+        <div>
+          <span class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            SmartAttend
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200">Admin Control</span>
+          </span>
+          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Central Institutional Administration</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell Dropdown -->
+        <div class="relative">
+          <button id="notif-bell-btn" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span id="notif-badge" class="hidden absolute top-1 right-1 px-1.5 py-0.2 bg-rose-600 text-white text-[10px] font-bold rounded-full border-2 border-white">0</span>
+          </button>
+          <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 erp-card bg-white border border-slate-200 shadow-xl rounded-2xl z-50 overflow-hidden">
+            <div class="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Admin System Alerts</h3>
+              <button onclick="markAllNotifsRead()" class="text-[11px] font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+            </div>
+            <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-slate-100"></div>
+          </div>
+        </div>
+
+        <!-- Admin Profile Pill -->
+        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-200 object-cover">
+          <div class="hidden sm:block text-left">
+            <div class="text-xs font-bold text-slate-900 leading-tight">ERP Administrator</div>
+            <div class="text-[10px] text-slate-500">Super User</div>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition" title="Sign Out">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+  <!-- Layout Body -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex gap-6">
+
+    <!-- Sidebar -->
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-40 transform -translate-x-full md:relative md:translate-x-0 md:border-r-0 md:bg-transparent md:w-56 shrink-0 transition-transform duration-200 ease-in-out">
+      <div class="h-full flex flex-col justify-between p-4 md:p-0">
+        <nav class="space-y-1.5">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Admin Controls</div>
+          
+          <a href="#dashboard" data-adm-tab-target="adm-tab-dashboard" class="sidebar-link active">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            System Health
+          </a>
+
+          <a href="#users" data-adm-tab-target="adm-tab-users" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            User Management
+          </a>
+
+          <a href="#settings" data-adm-tab-target="adm-tab-settings" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            Academic Settings
+          </a>
+
+          <a href="#audit" data-adm-tab-target="adm-tab-audit" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Security Audit Logs
+          </a>
+
+          <a href="#reports" data-adm-tab-target="adm-tab-reports" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            Reports & Export
+          </a>
+
+          <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Session</div>
+          <button onclick="handleLogout()" class="sidebar-link w-full text-rose-600 hover:bg-rose-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Sign Out
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 space-y-6">
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: SYSTEM HEALTH DASHBOARD -->
+      <!-- ============================================================ -->
+      <section id="adm-tab-dashboard" class="adm-tab-view space-y-6">
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">System Statistics & Overview</h1>
+          <p class="text-xs text-slate-500 mt-0.5">High-level view of institutional enrollment, attendance conduction, and pending permissions.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Students</span>
+            <div id="adm-kpi-students" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Total Enrolled</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Faculty</span>
+            <div id="adm-kpi-faculty" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Teaching Staff</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Departments</span>
+            <div id="adm-kpi-departments" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">CSE & ECE</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Subjects</span>
+            <div id="adm-kpi-subjects" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Active Courses</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Attendance</span>
+            <div id="adm-kpi-attendance" class="text-2xl font-black text-emerald-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Total Logs</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending Slips</span>
+            <div id="adm-kpi-pending" class="text-2xl font-black text-amber-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Awaiting Action</span>
+          </div>
+        </div>
+
+        <!-- Department Performance Cards -->
+        <div>
+          <h3 class="text-base font-bold text-slate-800 mb-3">Department Attendance Performance</h3>
+          <div id="dept-comparison-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: USER MANAGEMENT -->
+      <!-- ============================================================ -->
+      <section id="adm-tab-users" class="adm-tab-view space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Institutional User Directory</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Manage student, faculty, HOD, and administrative user credentials and status.</p>
+          </div>
+          <button onclick="openModal('add-user-modal')" class="px-4 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+            <span>+ Add New User</span>
+          </button>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="erp-card p-4 bg-white border border-slate-200 flex flex-col sm:flex-row items-center gap-3">
+          <input type="text" id="user-search-input" placeholder="Search by name or email..." oninput="loadAdminUsers()" class="w-full sm:flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          <select id="user-role-filter" onchange="loadAdminUsers()" class="w-full sm:w-44 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+            <option value="">All Roles</option>
+            <option value="STUDENT">Students</option>
+            <option value="FACULTY">Faculty</option>
+            <option value="HOD">HODs</option>
+            <option value="ADMIN">Administrators</option>
+          </select>
+        </div>
+
+        <!-- Users Table -->
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">Name</th>
+                  <th class="px-4 py-3.5">Email</th>
+                  <th class="px-4 py-3.5 text-center">Role</th>
+                  <th class="px-4 py-3.5 text-center">Status</th>
+                  <th class="px-4 py-3.5">Created Date</th>
+                  <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: ACADEMIC SETTINGS -->
+      <!-- ============================================================ -->
+      <section id="adm-tab-settings" class="adm-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Institutional Attendance Settings</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Configure institutional eligibility thresholds and current semester session variables.</p>
+        </div>
+
+        <div class="erp-card p-6 bg-white border border-slate-200 max-w-xl">
+          <form id="academic-settings-form" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Minimum Attendance Percentage Threshold (%) *</label>
+              <input type="number" id="setting-min-attendance" step="0.5" min="50" max="95" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-brand-700 focus:ring-2 focus:ring-brand-500">
+              <p class="text-[11px] text-slate-400 mt-1">Default: 75.0%. Modifying this recalculates eligibility across all student dashboards and warning banners instantly.</p>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Academic Session / Year *</label>
+              <input type="text" id="setting-academic-year" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Current Active Semester *</label>
+              <select id="setting-semester" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-brand-500">
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+                <option value="4">Semester 4</option>
+                <option value="5" selected>Semester 5 (Current Active)</option>
+                <option value="6">Semester 6</option>
+                <option value="7">Semester 7</option>
+                <option value="8">Semester 8</option>
+              </select>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+              <button type="submit" class="px-6 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition">
+                Save Academic Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 4: SECURITY AUDIT LOGS -->
+      <!-- ============================================================ -->
+      <section id="adm-tab-audit" class="adm-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">System Security & Action Audit Trail</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Immutable chronological record of logins, attendance modifications, and permission approvals.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">Timestamp</th>
+                  <th class="px-4 py-3.5">Actor</th>
+                  <th class="px-4 py-3.5">Action</th>
+                  <th class="px-4 py-3.5">Entity</th>
+                  <th class="px-4 py-3.5">Details</th>
+                  <th class="px-4 py-3.5">IP Address</th>
+                </tr>
+              </thead>
+              <tbody id="admin-audit-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 5: REPORTS & EXPORT CENTER -->
+      <!-- ============================================================ -->
+      <section id="adm-tab-reports" class="adm-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Institutional Reports & Export Center</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Export certified attendance rosters and defaulter lists to CSV or printable format.</p>
+        </div>
+
+        <div class="erp-card p-6 bg-white border border-slate-200 max-w-xl space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Report Type</label>
+            <select id="report-type-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold focus:ring-2 focus:ring-brand-500">
+              <option value="student_attendance">Student Overall Attendance Roster</option>
+              <option value="low_attendance">Official Defaulter & Low Attendance List (&lt; 75%)</option>
+              <option value="permission_requests">Permission Requests Master Audit Report</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button id="btn-export-csv" onclick="generateAndExportReport('csv')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Download CSV
+            </button>
+            <button onclick="generateAndExportReport('print')" class="flex-1 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+              Print / Save PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="add-user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-base font-bold text-slate-900">Add New Institutional User</h3>
+        <button onclick="closeModal('add-user-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="add-user-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name *</label>
+          <input type="text" id="new-user-name" required placeholder="e.g. Ramesh Kulkarni" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address *</label>
+          <input type="email" id="new-user-email" required placeholder="e.g. ramesh@college.edu" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Role *</label>
+            <select id="new-user-role" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 font-bold">
+              <option value="STUDENT">Student</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="HOD">HOD</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Department *</label>
+            <select id="new-user-dept" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+              <option value="1">CSE (Computer Science)</option>
+              <option value="2">ECE (Electronics & Comm)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="new-student-fields" class="space-y-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">USN (University Seat No.)</label>
+            <input type="text" id="new-student-usn" placeholder="e.g. 4SJ22CS088" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Semester</label>
+              <input type="number" id="new-student-sem" value="5" min="1" max="8" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Section</label>
+              <input type="text" id="new-student-sec" value="A" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Initial Password</label>
+          <input type="password" id="new-user-password" value="password123" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('add-user-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

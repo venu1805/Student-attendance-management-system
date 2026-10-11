@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal — SmartAttend ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="sidebar-mobile-toggle" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-brand-900 text-white flex items-center justify-center font-black text-lg shadow-sm">
+          SA
+        </div>
+        <div>
+          <span class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            SmartAttend
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Student Portal</span>
+          </span>
+          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Semester 5 • 2026-2027</p>
+        </div>
+      </div>
+
+      <!-- Right Nav Items -->
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell Dropdown -->
+        <div class="relative">
+          <button id="notif-bell-btn" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            <span id="notif-badge" class="hidden absolute top-1 right-1 px-1.5 py-0.2 bg-rose-600 text-white text-[10px] font-bold rounded-full border-2 border-white">
+              0
+            </span>
+          </button>
+
+          <!-- Notification Popup -->
+          <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 erp-card bg-white border border-slate-200 shadow-xl rounded-2xl z-50 overflow-hidden">
+            <div class="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Notifications</h3>
+              <button onclick="markAllNotifsRead()" class="text-[11px] font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+            </div>
+            <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Profile Pill (Clickable to open Profile & Security) -->
+        <div onclick="switchToTab('tab-security')" class="flex items-center gap-2.5 pl-3 border-l border-slate-200 cursor-pointer hover:bg-slate-100/80 rounded-xl p-1.5 transition" title="Institutional Profile & Security">
+          <div id="top-profile-avatar" class="w-8 h-8 rounded-full bg-brand-900 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">ST</div>
+          <div class="hidden sm:block text-left">
+            <div id="top-profile-name" class="text-xs font-bold text-slate-900 leading-tight">Rahul Sharma</div>
+            <div id="top-profile-usn" class="text-[10px] font-mono-code text-slate-500">4SJ22CS045</div>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition" title="Sign Out">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar Backdrop (Mobile) -->
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+  <!-- Layout Wrapper -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex gap-6">
+
+    <!-- Left Navigation Sidebar -->
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-40 transform -translate-x-full md:relative md:translate-x-0 md:border-r-0 md:bg-transparent md:w-56 shrink-0 transition-transform duration-200 ease-in-out">
+      <div class="h-full flex flex-col justify-between p-4 md:p-0">
+        <nav class="space-y-1.5">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Navigation</div>
+          
+          <a href="#dashboard" data-tab-target="tab-dashboard" class="sidebar-link active">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            Dashboard
+          </a>
+
+          <a href="#subjects" data-tab-target="tab-subjects" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            My Subjects
+          </a>
+
+          <a href="#calculator" data-tab-target="tab-calculator" class="sidebar-link">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Required Classes
+          </a>
+
+          <a href="#calendar" data-tab-target="tab-calendar" class="sidebar-link">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Attendance Calendar
+          </a>
+
+          <a href="#permissions" data-tab-target="tab-permissions" class="sidebar-link">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Permission Portal
+          </a>
+
+          <a href="#security" data-tab-target="tab-security" class="sidebar-link">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            Profile & Security
+          </a>
+
+          <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Account</div>
+          <button onclick="handleLogout()" class="sidebar-link w-full text-rose-600 hover:bg-rose-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Logout
+          </button>
+        </nav>
+
+        <!-- Sidebar Footer Callout -->
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white text-xs">
+          <div class="font-bold text-slate-800">Need Help?</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Contact CSE Dept Office: CSE-HOD@college.edu</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-6">
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: DASHBOARD OVERVIEW -->
+      <!-- ============================================================ -->
+      <section id="tab-dashboard" class="tab-view space-y-6">
+        
+        <!-- Welcome Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h1 id="student-welcome-name" class="text-2xl font-black text-slate-900 tracking-tight">Welcome back, Rahul</h1>
+            <p id="student-meta-details" class="text-xs text-slate-500 mt-0.5 font-medium">USN: 4SJ22CS045 • Computer Science & Engineering</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openPermissionModal()" class="px-4 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+              <span>+ Request Permission</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. "Am I Safe?" Attendance Status Banner -->
+        <div id="am-i-safe-banner">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- 2. Attendance KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+          <!-- Overall % -->
+          <div class="erp-card p-4 col-span-2 sm:col-span-1 lg:col-span-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Overall Attendance</span>
+              <span class="text-[10px] font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">Mandatory 75%</span>
+            </div>
+            <div class="flex items-baseline gap-2 mt-2">
+              <span id="kpi-overall-pct" class="text-3xl font-black text-slate-900 tracking-tight">--%</span>
+              <span class="text-xs text-slate-500 font-medium">Current Average</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+              <div id="overall-progress-bar" class="h-full bg-emerald-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Conducted -->
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Conducted</span>
+            <div id="kpi-conducted" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Total sessions</span>
+          </div>
+
+          <!-- Attended -->
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Attended</span>
+            <div id="kpi-attended" class="text-2xl font-black text-emerald-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Present + Permitted</span>
+          </div>
+
+          <!-- Absent -->
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Absent</span>
+            <div id="kpi-absent" class="text-2xl font-black text-rose-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Missed classes</span>
+          </div>
+
+          <!-- Required Classes -->
+          <div class="erp-card p-4 bg-slate-50 border-slate-200">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Classes Needed</span>
+            <div id="kpi-required-classes" class="text-2xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">To reach 75%</span>
+          </div>
+        </div>
+
+        <!-- 3. Low Attendance Alert Container -->
+        <div id="low-attendance-alert-container" class="space-y-3 hidden">
+          <!-- Dynamically populated with alert for Java etc. -->
+        </div>
+
+        <!-- 4. Subject-wise Summary Table Preview -->
+        <div class="erp-card overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Enrolled Subjects Attendance</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Subject-wise class conduction and attendance ratio</p>
+            </div>
+            <button onclick="document.querySelector('[data-tab-target=\'tab-calculator\']').click()" class="text-xs font-bold text-brand-700 hover:text-brand-900 transition flex items-center gap-1">
+              <span>Open Calculator</span> →
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3.5">Subject</th>
+                  <th class="px-5 py-3.5">Faculty</th>
+                  <th class="px-5 py-3.5 text-center">Conducted</th>
+                  <th class="px-5 py-3.5 text-center">Attended</th>
+                  <th class="px-5 py-3.5 text-center">Absent</th>
+                  <th class="px-5 py-3.5 text-center">Percentage</th>
+                  <th class="px-5 py-3.5 text-center">Status</th>
+                  <th class="px-5 py-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subjects-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: MY SUBJECTS -->
+      <!-- ============================================================ -->
+      <section id="tab-subjects" class="tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-xl font-black text-slate-900">Subject Breakdown & Detailed History</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Click "View Details" on any subject to review session-by-session records.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th class="px-5 py-3.5">Subject</th>
+                  <th class="px-5 py-3.5">Faculty</th>
+                  <th class="px-5 py-3.5 text-center">Conducted</th>
+                  <th class="px-5 py-3.5 text-center">Attended</th>
+                  <th class="px-5 py-3.5 text-center">Absent</th>
+                  <th class="px-5 py-3.5 text-center">Percentage</th>
+                  <th class="px-5 py-3.5 text-center">Status</th>
+                  <th class="px-5 py-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subjects-table-body-full" class="divide-y divide-slate-100">
+                <!-- Dynamically populated via loadStudentDashboard -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: REQUIRED CLASSES CALCULATOR (KEY UNIQUE FEATURE) -->
+      <!-- ============================================================ -->
+      <section id="tab-calculator" class="tab-view space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-1">
+              <span>🎯 Dynamic Forecasting Engine</span>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Required Classes Calculator</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Simulate how many consecutive classes you must attend to satisfy attendance eligibility.</p>
+          </div>
+        </div>
+
+        <!-- Calculator Card -->
+        <div class="erp-card p-6 bg-white border border-slate-200 shadow-md">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Controls -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Subject or Overall</label>
+                <select id="calc-subject-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Target Minimum Percentage</label>
+                  <span id="calc-target-label" class="text-sm font-black text-brand-700 font-mono-code">75%</span>
+                </div>
+                <input type="range" id="calc-target-slider" min="60" max="95" step="1" value="75" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600">
+                <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono-code">
+                  <span>60%</span>
+                  <span>75% (Mandatory)</span>
+                  <span>85%</span>
+                  <span>95%</span>
+                </div>
+              </div>
+
+              <!-- What-If Simulation Box -->
+              <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600 block">Upcoming Classes Simulator</span>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-[11px] font-semibold text-slate-600 block mb-1">Upcoming to Attend</label>
+                    <input type="number" id="calc-future-attended" min="0" value="0" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  </div>
+                  <div>
+                    <label class="text-[11px] font-semibold text-slate-600 block mb-1">Upcoming to Miss</label>
+                    <input type="number" id="calc-future-missed" min="0" value="0" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  </div>
+                </div>
+                <div id="calc-sim-result" class="p-2.5 bg-white border border-slate-200 rounded-lg">
+                  <!-- Dynamically populated simulation result -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Mathematical Output & Explanation -->
+            <div class="flex flex-col justify-between space-y-4">
+              <div id="calc-result-box">
+                <!-- Dynamically populated output -->
+              </div>
+
+              <!-- Mathematical Rule Box -->
+              <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600 space-y-2">
+                <span class="font-bold text-slate-800 block">Institutional Formula & VTU Rules:</span>
+                <p class="leading-relaxed text-[11px]">
+                  SmartAttend evaluates the smallest non-negative integer <code class="font-bold font-mono-code text-slate-900">x</code> satisfying:
+                  <br>
+                  <span class="font-mono-code font-bold text-slate-900 block mt-1 bg-white p-2 rounded border border-slate-200">
+                    (attended + x) / (conducted + x) &gt;= target% / 100
+                  </span>
+                </p>
+                <p class="text-[11px] text-slate-500">
+                  Missing even one upcoming class shifts the denominator, increasing consecutive class obligations.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 4: ATTENDANCE CALENDAR -->
+      <!-- ============================================================ -->
+      <section id="tab-calendar" class="tab-view space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black text-slate-900">Attendance Calendar View</h2>
+            <p class="text-xs text-slate-500 mt-0.5">September 2026 academic timeline. Click on any date to inspect session hours.</p>
+          </div>
+          <div class="flex items-center gap-3 text-xs font-medium">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Present</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Absent</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Approved Duty Leave</span>
+          </div>
+        </div>
+
+        <div class="erp-card p-6 bg-white border border-slate-200">
+          <div class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+            <span>September 2026</span>
+            <span class="text-xs text-slate-400">Current Semester</span>
+          </div>
+          <div id="calendar-grid" class="grid grid-cols-7 gap-2.5">
+            <!-- Dynamically populated with 30 days -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 5: PERMISSION REQUEST PORTAL (KEY DIFFERENTIATING FEATURE) -->
+      <!-- ============================================================ -->
+      <section id="tab-permissions" class="tab-view space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold mb-1">
+              <span>📋 Official Duty Leave & Medical Exemption</span>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Attendance Permission Request Portal</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Missed a class? Submit a formal permission request with verifiable supporting documents.</p>
+          </div>
+          <button onclick="openPermissionModal()" class="px-4 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+            <span>+ Request Attendance Permission</span>
+          </button>
+        </div>
+
+        <!-- Permission Request History Table -->
+        <div class="erp-card overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Your Permission Requests</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Live status tracking through Faculty and HOD review tiers</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th class="px-4 py-3.5">Request ID</th>
+                  <th class="px-4 py-3.5">Subject</th>
+                  <th class="px-4 py-3.5">Absent Date & Hour</th>
+                  <th class="px-4 py-3.5">Reason</th>
+                  <th class="px-4 py-3.5">Submitted On</th>
+                  <th class="px-4 py-3.5 text-center">Status</th>
+                  <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="permission-requests-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 6: PROFILE & SECURITY (CHANGE PASSWORD) -->
+      <!-- ============================================================ -->
+      <section id="tab-security" class="tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Institutional Profile & Security</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Manage personal information, verify institutional academic master records, and update security credentials.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Student Academic Profile Card with Edit Profile Mode -->
+          <div class="erp-card p-6 bg-white border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Student Profile</h3>
+                <span class="text-[11px] text-slate-500">Contact & personal details</span>
+              </div>
+              <button type="button" id="btn-edit-profile" onclick="toggleProfileEditMode(true)" class="px-3 py-1.5 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                <span>Edit Profile</span>
+              </button>
+            </div>
+
+            <!-- Profile Alert Message -->
+            <div id="profile-alert" class="hidden p-3 rounded-xl border text-xs font-medium"></div>
+
+            <!-- Top Avatar & Name Info -->
+            <div class="flex items-start gap-3.5">
+              <div id="profile-avatar-display" class="w-16 h-16 rounded-2xl bg-brand-100 text-brand-900 flex items-center justify-center font-black text-xl shrink-0 overflow-hidden border border-brand-200 shadow-sm relative group">
+                <span id="profile-card-initials">ST</span>
+              </div>
+
+              <!-- View Mode Details -->
+              <div id="profile-view-header" class="flex-1 min-w-0">
+                <h3 id="profile-view-name" class="text-base font-bold text-slate-900 truncate">Rahul Sharma</h3>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span id="profile-view-usn-badge" class="text-xs font-mono font-bold text-brand-700">4SJ22CS045</span>
+                  <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
+                  </span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                  <span>📞</span>
+                  <span id="profile-view-phone-display" class="font-medium text-slate-700">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- View Mode Extra Details -->
+            <div id="profile-view-extra" class="p-3 bg-slate-50 rounded-xl space-y-1.5 text-xs text-slate-600 border border-slate-100">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Emergency Contact:</span>
+                <span id="profile-view-emergency-display" class="font-medium text-slate-700">--</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Blood Group:</span>
+                <span id="profile-view-blood-display" class="font-semibold text-rose-700">--</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">Bio / Note:</span>
+                <p id="profile-view-bio-display" class="text-[11px] italic text-slate-600">No personal bio provided.</p>
+              </div>
+            </div>
+
+            <!-- Edit Mode Inputs (Hidden by default) -->
+            <div id="profile-edit-fields" class="hidden space-y-3.5 pt-2">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name *</label>
+                <input type="text" id="edit-profile-name" required placeholder="Full Name" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Mobile Phone *</label>
+                  <input type="tel" id="edit-profile-phone" placeholder="+91 9876543210" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Emergency Contact</label>
+                  <input type="tel" id="edit-profile-emergency" placeholder="+91 9800011223" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Blood Group</label>
+                <select id="edit-profile-blood" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+                  <option value="">Select Blood Group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Bio / Personal Note</label>
+                <textarea id="edit-profile-bio" rows="2" placeholder="Brief note about your academic focus or interests..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500"></textarea>
+              </div>
+
+              <!-- Avatar Photo Upload & Presets -->
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Profile Photo</label>
+                
+                <!-- Direct File Upload Button -->
+                <div class="flex items-center gap-2">
+                  <input type="file" id="edit-profile-avatar-file" accept="image/*" class="hidden" onchange="handleAvatarFileSelect(this)">
+                  <button type="button" onclick="document.getElementById('edit-profile-avatar-file').click()" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold rounded-lg text-xs transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span>Upload Image File</span>
+                  </button>
+                  <span id="avatar-file-name" class="text-[10px] text-slate-500 truncate flex-1">Max 5 MB (JPG, PNG, WEBP)</span>
+                </div>
+
+                <!-- Or URL -->
+                <div>
+                  <input type="url" id="edit-profile-avatar" placeholder="Or enter Photo URL (https://...)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500" oninput="previewAvatarUrl(this.value)">
+                </div>
+
+                <!-- Preset Avatars -->
+                <div>
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Or Choose an Avatar Preset:</span>
+                  <div class="flex items-center gap-2 overflow-x-auto py-1">
+                    <button type="button" onclick="selectPresetAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150')" class="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-200 hover:border-brand-600 transition shrink-0" title="Scholar">
+                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover" alt="Preset 1">
+                    </button>
+                    <button type="button" onclick="selectPresetAvatar('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150')" class="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-200 hover:border-brand-600 transition shrink-0" title="Student Tech">
+                      <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150" class="w-full h-full object-cover" alt="Preset 2">
+                    </button>
+                    <button type="button" onclick="selectPresetAvatar('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150')" class="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-200 hover:border-brand-600 transition shrink-0" title="Campus Leader">
+                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" class="w-full h-full object-cover" alt="Preset 3">
+                    </button>
+                    <button type="button" onclick="selectPresetAvatar('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150')" class="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-200 hover:border-brand-600 transition shrink-0" title="Graduate">
+                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" class="w-full h-full object-cover" alt="Preset 4">
+                    </button>
+                    <button type="button" onclick="selectPresetAvatar('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150')" class="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-200 hover:border-brand-600 transition shrink-0" title="Researcher">
+                      <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150" class="w-full h-full object-cover" alt="Preset 5">
+                    </button>
+                    <button type="button" onclick="selectPresetAvatar('')" class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center hover:bg-slate-300 transition shrink-0" title="Reset to Initials">
+                      ST
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Action Buttons (Save Changes & Cancel) -->
+            <div id="profile-edit-actions" class="hidden pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <button type="button" id="btn-cancel-profile" onclick="cancelProfileEdit()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                Cancel
+              </button>
+              <button type="button" id="btn-save-profile" onclick="saveProfileChanges()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                <span>Save Changes</span>
+              </button>
+            </div>
+
+            <!-- Non-Editable Institutional Records -->
+            <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Institutional Master Data</span>
+                <span class="text-[10px] text-slate-400 flex items-center gap-1">🔒 Locked by Admin</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">USN / Student ID:</span> <strong id="profile-card-usn" class="font-mono text-slate-800">4SJ22CS045</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Official Email:</span> <strong id="profile-card-email" class="text-slate-800">student@college.edu</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Branch / Dept:</span> <strong id="profile-card-dept" class="text-slate-800">Computer Science & Engineering</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Class Master:</span> <strong id="profile-card-class" class="text-slate-800">5 CSE A</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Semester:</span> <strong id="profile-card-semester" class="text-slate-800">Sem 5</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Section:</span> <strong id="profile-card-section" class="text-slate-800">Section A</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Roll Number:</span> <strong id="profile-card-roll" class="text-slate-800">45</strong></div>
+              <div class="flex justify-between py-1 border-b border-slate-50"><span class="text-slate-500">Academic Year:</span> <strong id="profile-card-ay" class="text-slate-800">2026-2027</strong></div>
+              <div class="flex justify-between py-1"><span class="text-slate-500">Enrollment Status:</span> <strong id="profile-card-status" class="text-emerald-700 font-bold">Active & Verified</strong></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Change Password & Security Management -->
+          <div class="lg:col-span-2 space-y-6">
+
+            <!-- 1. Change Password Form Card -->
+            <div class="erp-card p-6 bg-white border border-slate-200 space-y-5">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Change Password</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">Ensure your account is protected with a strong, compliant password.</p>
+                </div>
+                <span class="text-[10px] font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
+                  PBKDF2 SHA-256
+                </span>
+              </div>
+
+              <div id="change-pwd-alert" class="hidden p-3 rounded-xl border text-xs font-medium"></div>
+
+              <form id="change-password-form" class="space-y-4 text-xs">
+                <!-- Current Password with Show/Hide -->
+                <div>
+                  <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Current Password *</label>
+                  <div class="relative">
+                    <input type="password" id="cur-pwd" required placeholder="Enter current password" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+                    <button type="button" onclick="togglePasswordVisibility('cur-pwd', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition" title="Show / Hide Password">
+                      <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                      <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- New Password with Show/Hide -->
+                  <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">New Password *</label>
+                    <div class="relative">
+                      <input type="password" id="new-pwd" required placeholder="Enter new strong password" oninput="checkPasswordStrength(this.value)" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+                      <button type="button" onclick="togglePasswordVisibility('new-pwd', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition" title="Show / Hide Password">
+                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Confirm Password with Show/Hide -->
+                  <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Confirm New Password *</label>
+                    <div class="relative">
+                      <input type="password" id="confirm-pwd" required placeholder="Re-enter new password" oninput="checkPasswordMatch()" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+                      <button type="button" onclick="togglePasswordVisibility('confirm-pwd', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition" title="Show / Hide Password">
+                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Password Strength Visual Meter -->
+                <div class="space-y-1.5 pt-1">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="font-bold text-slate-600">Password Strength: <strong id="pwd-strength-text" class="text-slate-400">None</strong></span>
+                    <span id="pwd-match-indicator" class="text-[10px] font-semibold text-slate-400"></span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+                    <div id="pwd-strength-bar" class="h-full bg-slate-300 transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                </div>
+
+                <!-- Password Strength Requirements Checklist -->
+                <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-[11px]">
+                  <span class="font-bold text-slate-700 block">Institutional Password Policy:</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div id="req-len" class="flex items-center gap-1.5 text-slate-400"><span>•</span> At least 8 characters</div>
+                    <div id="req-upper" class="flex items-center gap-1.5 text-slate-400"><span>•</span> At least 1 uppercase letter (A-Z)</div>
+                    <div id="req-lower" class="flex items-center gap-1.5 text-slate-400"><span>•</span> At least 1 lowercase letter (a-z)</div>
+                    <div id="req-num" class="flex items-center gap-1.5 text-slate-400"><span>•</span> At least 1 number (0-9)</div>
+                    <div id="req-spec" class="flex items-center gap-1.5 text-slate-400 sm:col-span-2"><span>•</span> At least 1 special character (!@#$%^&*...)</div>
+                  </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                  <button type="submit" id="change-pwd-btn" class="px-6 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <span>Change Password</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 2. Security Overview & Recent Account Activity Card -->
+            <div class="erp-card p-6 bg-white border border-slate-200 space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Active Session & Security Activity</h3>
+                  <p class="text-xs text-slate-500">Real-time session parameters and audit log records for this account.</p>
+                </div>
+                <button type="button" onclick="loadSecurityActivity()" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  <span>Refresh Activity</span>
+                </button>
+              </div>
+
+              <!-- Security Specs Badges -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold block">Auth Protocol</span>
+                  <strong class="text-slate-800 font-medium">JWT Bearer</strong>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold block">Current Device</span>
+                  <strong id="sec-device-info" class="text-slate-800 font-medium truncate block">Web Browser</strong>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold block">Account Status</span>
+                  <strong class="text-emerald-700 font-bold">Active</strong>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold block">OTP Recovery</span>
+                  <strong class="text-brand-700 font-bold">Configured</strong>
+                </div>
+              </div>
+
+              <!-- Security Audit Trail Table -->
+              <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                      <th class="px-3 py-2.5">Activity</th>
+                      <th class="px-3 py-2.5">Details</th>
+                      <th class="px-3 py-2.5">IP Address</th>
+                      <th class="px-3 py-2.5 text-right">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody id="security-activity-table-body" class="divide-y divide-slate-100">
+                    <tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Loading security activity...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODALS -->
+  <!-- ============================================================ -->
+
+  <!-- 1. Submit Permission Request Modal -->
+  <div id="permission-request-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Request Attendance Permission</h3>
+          <p class="text-xs text-slate-500">Provide absence details and attach verification proof.</p>
+        </div>
+        <button onclick="closeModal('permission-request-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="permission-request-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        
+        <!-- Missed Class Helper -->
+        <div id="missed-classes-picker">
+          <!-- Dynamically populated with quick pick chips -->
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Subject *</label>
+            <select id="perm-subject" name="subject_id" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+              <option value="1">CS501 — Database Management</option>
+              <option value="2">CS502 — Advanced Java</option>
+              <option value="3">CS503 — Data Structures</option>
+              <option value="4">CS504 — Web Technologies</option>
+              <option value="5">CS505 — Operating Systems</option>
+              <option value="6">CS506 — Computer Networks</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Class Date *</label>
+            <input type="date" id="perm-date" name="date" required value="2026-09-22" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Class Hour *</label>
+            <select id="perm-hour" name="hour" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+              <option value="1">Hour 1 (09:00 - 10:00)</option>
+              <option value="2">Hour 2 (10:00 - 11:00)</option>
+              <option value="3">Hour 3 (11:15 - 12:15)</option>
+              <option value="4">Hour 4 (12:15 - 01:15)</option>
+              <option value="5">Hour 5 (02:00 - 03:00)</option>
+              <option value="6">Hour 6 (03:00 - 04:00)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Reason Category *</label>
+            <select id="perm-reason" name="reason" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+              <option value="Medical Emergency">Medical Emergency</option>
+              <option value="Hospital Visit">Hospital Visit / Doctor Consultation</option>
+              <option value="College Event">College Event / Hackathon</option>
+              <option value="Official Representation">Official Sports / Cultural Representation</option>
+              <option value="Family Emergency">Family Emergency</option>
+              <option value="Other valid reason">Other Valid Reason</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Detailed Explanation *</label>
+          <textarea id="perm-description" name="description" required rows="3" placeholder="Explain circumstances causing absence with relevant details..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 leading-relaxed"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Upload Supporting Document *</label>
+          <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-brand-400 transition bg-slate-50/50">
+            <input type="file" id="perm-document" name="document" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+            <label for="perm-document" class="cursor-pointer flex flex-col items-center">
+              <svg class="w-6 h-6 text-slate-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+              <span class="text-xs font-semibold text-brand-600 hover:text-brand-800">Browse Document</span>
+              <span class="text-[10px] text-slate-400 mt-0.5">Formats: PDF, JPG, JPEG, PNG (Max 5 MB)</span>
+            </label>
+            <div id="file-preview-name" class="mt-2 text-xs font-bold text-emerald-700"></div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('permission-request-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">Cancel</button>
+          <button type="submit" id="perm-submit-btn" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Permission Details Modal -->
+  <div id="permission-details-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 id="modal-perm-code" class="text-base font-bold text-slate-900">Permission Request</h3>
+        <button onclick="closeModal('permission-details-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div id="modal-perm-body" class="p-6 overflow-y-auto">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('permission-details-modal')" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Subject Session Breakdown Modal -->
+  <div id="subject-details-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 id="subject-details-title" class="text-base font-bold text-slate-900">Subject Session Breakdown</h3>
+          <p class="text-xs text-slate-500">Every attendance session logged by faculty</p>
+        </div>
+        <button onclick="closeModal('subject-details-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 sticky top-0">
+              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3 text-center">Class Hour</th>
+              <th class="px-4 py-3 text-center">Status</th>
+              <th class="px-4 py-3">Faculty</th>
+              <th class="px-4 py-3">Audit Notes</th>
+            </tr>
+          </thead>
+          <tbody id="subject-details-table-body" class="divide-y divide-slate-100">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('subject-details-modal')" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Day Calendar Modal -->
+  <div id="day-calendar-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 id="day-calendar-title" class="text-base font-bold text-slate-900">Attendance Details</h3>
+        <button onclick="closeModal('day-calendar-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div id="day-calendar-body" class="p-5 overflow-y-auto max-h-80">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('day-calendar-modal')" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/student.js"></script>
+</body>
+</html>

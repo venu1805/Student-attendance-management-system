@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Portal — SmartAttend ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="sidebar-mobile-toggle" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-blue-700 text-white flex items-center justify-center font-black text-lg shadow-sm">
+          SA
+        </div>
+        <div>
+          <span class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            SmartAttend
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">Faculty Portal</span>
+          </span>
+          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Dept. of Computer Science & Engineering</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell Dropdown -->
+        <div class="relative">
+          <button id="notif-bell-btn" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span id="notif-badge" class="hidden absolute top-1 right-1 px-1.5 py-0.2 bg-rose-600 text-white text-[10px] font-bold rounded-full border-2 border-white">0</span>
+          </button>
+          <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 erp-card bg-white border border-slate-200 shadow-xl rounded-2xl z-50 overflow-hidden">
+            <div class="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Faculty Notifications</h3>
+              <button onclick="markAllNotifsRead()" class="text-[11px] font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+            </div>
+            <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-slate-100"></div>
+          </div>
+        </div>
+
+        <!-- Faculty Profile Pill -->
+        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-200 object-cover">
+          <div class="hidden sm:block text-left">
+            <div class="text-xs font-bold text-slate-900 leading-tight">Prof. Arvind Kumar</div>
+            <div class="text-[10px] text-slate-500">Associate Professor</div>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition" title="Sign Out">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+  <!-- Layout Body -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex gap-6">
+
+    <!-- Sidebar -->
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-40 transform -translate-x-full md:relative md:translate-x-0 md:border-r-0 md:bg-transparent md:w-56 shrink-0 transition-transform duration-200 ease-in-out">
+      <div class="h-full flex flex-col justify-between p-4 md:p-0">
+        <nav class="space-y-1.5">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Faculty Menu</div>
+          
+          <a href="#dashboard" data-fac-tab-target="fac-tab-dashboard" class="sidebar-link active">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            Dashboard
+          </a>
+
+          <a href="#mark-attendance" data-fac-tab-target="fac-tab-mark" class="sidebar-link">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            Mark Attendance
+          </a>
+
+          <a href="#students" data-fac-tab-target="fac-tab-students" class="sidebar-link">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            Students
+          </a>
+
+          <a href="#subjects" data-fac-tab-target="fac-tab-subjects" class="sidebar-link">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Subject Allocation
+          </a>
+
+          <a href="#permissions" data-fac-tab-target="fac-tab-permissions" class="sidebar-link">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Permission Requests
+          </a>
+
+          <a href="#low-attendance" data-fac-tab-target="fac-tab-low" class="sidebar-link">
+            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Defaulter Watchlist
+          </a>
+
+          <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Account</div>
+          <button onclick="handleLogout()" class="sidebar-link w-full text-rose-600 hover:bg-rose-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Sign Out
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-6">
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: FACULTY DASHBOARD -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-dashboard" class="fac-tab-view space-y-6">
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">Faculty Dashboard</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Welcome, Prof. Arvind Kumar • Manage your classes, record attendance, and evaluate permission slips.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Assigned Subjects</span>
+            <div id="fac-kpi-subjects" class="text-3xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">DBMS & Web Tech</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Enrolled Students</span>
+            <div id="fac-kpi-students" class="text-3xl font-black text-blue-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Across assigned classes</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending Requests</span>
+            <div id="fac-kpi-pending" class="text-3xl font-black text-amber-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Needs review & approval</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Low Attendance</span>
+            <div id="fac-kpi-low" class="text-3xl font-black text-rose-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Students &lt; 75%</span>
+          </div>
+        </div>
+
+        <!-- Quick Launch Attendance Banner -->
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">Fast Roster</span>
+            <h3 class="text-lg font-bold mt-1">Ready to mark attendance for today's session?</h3>
+            <p class="text-xs text-blue-100 mt-0.5">Select a subject, choose the period hour, and save attendance in seconds with batch shortcuts.</p>
+          </div>
+          <button onclick="document.querySelector('[data-fac-tab-target=\'fac-tab-mark\']').click()" class="px-5 py-2.5 bg-white hover:bg-blue-50 text-blue-900 font-bold rounded-xl text-xs shadow-md transition shrink-0">
+            Open Attendance Marker →
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: MARK ATTENDANCE -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-mark" class="fac-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Mark / Edit Class Attendance</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Select subject and date to load the roster. Any modifications are logged with an audit trail.</p>
+        </div>
+
+        <!-- Session Selector Form -->
+        <div class="erp-card p-5 bg-white border border-slate-200">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Subject *</label>
+              <select id="att-subject-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Date *</label>
+              <input type="date" id="att-date-input" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Class Period / Hour *</label>
+              <select id="att-hour-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+                <option value="1">Hour 1 (09:00 - 10:00)</option>
+                <option value="2">Hour 2 (10:00 - 11:00)</option>
+                <option value="3">Hour 3 (11:15 - 12:15)</option>
+                <option value="4">Hour 4 (12:15 - 01:15)</option>
+                <option value="5">Hour 5 (02:00 - 03:00)</option>
+                <option value="6">Hour 6 (03:00 - 04:00)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+            <button id="att-load-roster-btn" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-sm transition">
+              Load Student Roster
+            </button>
+          </div>
+        </div>
+
+        <!-- Student Roster Section -->
+        <div id="class-roster-section" class="erp-card overflow-hidden hidden">
+          <div id="roster-mode-banner"></div>
+
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Enrolled Student Roster</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Toggle Present / Absent for each student, or use batch shortcuts</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="roster-all-present" type="button" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-xs transition">
+                ✓ All Present
+              </button>
+              <button id="roster-all-absent" type="button" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg text-xs transition">
+                ✗ All Absent
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-5 py-3">#</th>
+                  <th class="px-5 py-3">USN</th>
+                  <th class="px-5 py-3">Student Name</th>
+                  <th class="px-5 py-3 text-right">Attendance Status</th>
+                </tr>
+              </thead>
+              <tbody id="roster-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 italic">Press Save to record session attendance.</span>
+            <button id="save-attendance-btn" type="button" class="px-6 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition">
+              Save Attendance
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2.5: STUDENTS DIRECTORY & ADD NEW STUDENT -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-students" class="fac-tab-view space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Student Enrollment & Directory</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Faculty Dashboard → Students → Add New Student & View Class Rosters</p>
+          </div>
+          <button onclick="openAddStudentModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>+ Add New Student</span>
+          </button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="erp-card p-4 bg-white border border-slate-200 flex flex-col sm:flex-row items-center gap-3">
+          <input type="text" id="fac-student-search-input" placeholder="Search by student name or USN..." oninput="filterFacultyStudents()" class="w-full sm:flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          <select id="fac-student-class-filter" onchange="filterFacultyStudents()" class="w-full sm:w-56 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+            <option value="">All Enrolled Students</option>
+          </select>
+        </div>
+
+        <!-- Students Table -->
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">USN</th>
+                  <th class="px-4 py-3.5">Student Name</th>
+                  <th class="px-4 py-3.5">Roll No</th>
+                  <th class="px-4 py-3.5">Department / Branch</th>
+                  <th class="px-4 py-3.5">Class / Section</th>
+                  <th class="px-4 py-3.5">Official Email</th>
+                  <th class="px-4 py-3.5 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="fac-students-table-body" class="divide-y divide-slate-100 text-xs">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2.6: SUBJECT ALLOCATION TO CLASS -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-subjects" class="fac-tab-view space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Academic Subject Allocations</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Faculty Dashboard → Subjects → Allocate Subjects & Enroll Class Students</p>
+          </div>
+          <button onclick="openAllocateSubjectModal()" class="px-4 py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>+ Allocate Subject to Class</span>
+          </button>
+        </div>
+
+        <div id="fac-allocated-subjects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: PERMISSION REQUESTS -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-permissions" class="fac-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Student Permission Requests</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Evaluate absence justification, inspect medical documents, approve, reject, or escalate to HOD.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">Request ID</th>
+                  <th class="px-4 py-3.5">Student</th>
+                  <th class="px-4 py-3.5">Subject</th>
+                  <th class="px-4 py-3.5">Absent Session</th>
+                  <th class="px-4 py-3.5">Reason</th>
+                  <th class="px-4 py-3.5 text-center">Status</th>
+                  <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="faculty-permissions-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 4: DEFAULTER WATCHLIST -->
+      <!-- ============================================================ -->
+      <section id="fac-tab-low" class="fac-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Low Attendance Defaulters Watchlist (&lt; 75%)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Students currently falling below the 75% minimum threshold in your assigned subjects.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">USN</th>
+                  <th class="px-4 py-3.5">Student Name</th>
+                  <th class="px-4 py-3.5">Subject</th>
+                  <th class="px-4 py-3.5 text-center">Attended / Total</th>
+                  <th class="px-4 py-3.5 text-center">Current %</th>
+                  <th class="px-4 py-3.5 text-center">Consecutive Classes Required</th>
+                </tr>
+              </thead>
+              <tbody id="faculty-low-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Review Permission Modal -->
+  <div id="faculty-review-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 id="fac-review-title" class="text-base font-bold text-slate-900">Review Permission Request</h3>
+        <button onclick="closeModal('faculty-review-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div id="fac-review-details" class="space-y-3">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Faculty Remarks / Comments *</label>
+          <textarea id="fac-review-comment" rows="2" placeholder="Mandatory if rejecting or escalating to HOD..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 leading-relaxed"></textarea>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2" id="fac-review-actions">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Student Modal -->
+  <div id="faculty-add-student-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Add New Student</h3>
+          <p class="text-xs text-slate-500">Faculty Dashboard → Students → Add New Student</p>
+        </div>
+        <button onclick="closeModal('faculty-add-student-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="fac-add-student-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        <div id="add-student-error" class="hidden p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 font-medium"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Student Full Name *</label>
+            <input type="text" id="new-st-name" required placeholder="e.g. Priyanshu Kumar" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">USN / Student ID *</label>
+            <input type="text" id="new-st-usn" required placeholder="e.g. 4SJ23AI089" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 uppercase font-mono-code focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Institutional Email *</label>
+            <input type="email" id="new-st-email" required placeholder="e.g. priyanshu.aids@college.edu" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Phone Number</label>
+            <input type="tel" id="new-st-phone" placeholder="e.g. +91 9876543210" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-slate-700 uppercase tracking-wider">Temporary Password *</label>
+            <button type="button" onclick="generateRandomTempPassword()" class="text-brand-600 hover:text-brand-800 font-bold text-[11px]">⚡ Auto-Generate</button>
+          </div>
+          <div class="relative">
+            <input type="text" id="new-st-pwd" required placeholder="e.g. Temp@2026!#" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono-code focus:ring-2 focus:ring-brand-500">
+          </div>
+          <span class="text-[10px] text-slate-400 mt-0.5 block">Student will be prompted to change this upon initial login.</span>
+        </div>
+
+        <!-- Branch Selection with [+ Add New Branch] -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-slate-700 uppercase tracking-wider">Branch / Department *</label>
+            <button type="button" onclick="openAddBranchModal()" class="text-blue-600 hover:text-blue-800 font-bold text-[11px] flex items-center gap-1">
+              <span>+ Add New Branch</span>
+            </button>
+          </div>
+          <select id="new-st-branch" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+            <option value="" disabled selected>-- Select Academic Branch --</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Semester *</label>
+            <select id="new-st-sem" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+              <option value="3">Sem 3</option>
+              <option value="4" selected>Sem 4</option>
+              <option value="5">Sem 5</option>
+              <option value="6">Sem 6</option>
+              <option value="7">Sem 7</option>
+              <option value="8">Sem 8</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Section *</label>
+            <select id="new-st-sec" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <option value="A" selected>Section A</option>
+              <option value="B">Section B</option>
+              <option value="C">Section C</option>
+              <option value="D">Section D</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Roll No</label>
+            <input type="text" id="new-st-roll" placeholder="e.g. 45" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Academic Year *</label>
+          <input type="text" id="new-st-year" required value="2026-2027" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('faculty-add-student-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">Cancel</button>
+          <button type="submit" id="fac-submit-student-btn" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition">Create Student Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dynamic + Add New Branch Modal -->
+  <div id="faculty-add-branch-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">+ Add New Engineering Branch</h3>
+          <p class="text-xs text-slate-500">Instant database registration across all drop-downs</p>
+        </div>
+        <button onclick="closeModal('faculty-add-branch-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="fac-add-branch-form" class="p-6 space-y-4 text-xs">
+        <div id="add-branch-error" class="hidden p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 font-medium"></div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Branch Name *</label>
+          <input type="text" id="new-branch-name" required placeholder="e.g. Mechanical and Smart Manufacturing" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Branch Code (Optional)</label>
+          <input type="text" id="new-branch-code" placeholder="e.g. MSM (leave blank to auto-generate)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono-code uppercase focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('faculty-add-branch-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">Cancel</button>
+          <button type="submit" id="fac-submit-branch-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition">Add Branch to System</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Student Credentials Display Modal -->
+  <div id="student-credentials-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-emerald-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-emerald-100 bg-emerald-50/70 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</span>
+          <div>
+            <h3 class="text-base font-bold text-emerald-950">Student Account Created</h3>
+            <p class="text-xs text-emerald-700">Initial login credentials generated securely</p>
+          </div>
+        </div>
+        <button onclick="closeModal('student-credentials-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 font-mono-code">
+          <div class="flex justify-between"><span class="text-slate-500 font-sans">Student Name:</span> <strong id="cred-name" class="text-slate-900 font-sans"></strong></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-sans">USN:</span> <strong id="cred-usn" class="text-emerald-700"></strong></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-sans">Login Email:</span> <strong id="cred-email" class="text-blue-700"></strong></div>
+          <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200">
+            <span class="text-slate-500 font-sans">Temp Password:</span>
+            <strong id="cred-password" class="text-rose-600 font-bold text-sm"></strong>
+          </div>
+          <div class="flex justify-between"><span class="text-slate-500 font-sans">Department:</span> <span id="cred-branch" class="text-slate-800 font-sans"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-sans">Class:</span> <span id="cred-class" class="text-slate-800 font-sans"></span></div>
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed">
+          <strong>Security Notice:</strong> The temporary password is encrypted in the institutional database. The student must change this temporary password upon initial login under <em>Profile & Security</em>.
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="copyCredentialsToClipboard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition">
+            📋 Copy Credentials
+          </button>
+          <button type="button" onclick="closeModal('student-credentials-modal')" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs transition">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocate Subject to Class Modal with Multi-Student Checklist -->
+  <div id="faculty-allocate-subject-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Allocate Subject to Class & Enroll Students</h3>
+          <p class="text-xs text-slate-500">Configure subject parameters, pick class, and select enrolled students</p>
+        </div>
+        <button onclick="closeModal('faculty-allocate-subject-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="fac-allocate-subject-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        <div id="alloc-subject-error" class="hidden p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 font-medium"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Subject Code *</label>
+            <input type="text" id="alloc-subj-code" required placeholder="e.g. 22AI41" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono-code uppercase focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Subject Name *</label>
+            <input type="text" id="alloc-subj-name" required placeholder="e.g. Machine Learning & Deep Learning" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Subject Type *</label>
+            <select id="alloc-subj-type" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <option value="THEORY" selected>Theory</option>
+              <option value="PRACTICAL">Practical</option>
+              <option value="LAB">Lab</option>
+              <option value="TUTORIAL">Tutorial</option>
+              <option value="SEMINAR">Seminar</option>
+              <option value="PROJECT">Project</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Credits *</label>
+            <input type="number" id="alloc-subj-credits" min="1" max="6" value="4" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Min Attendance % *</label>
+            <input type="number" id="alloc-subj-min-pct" min="50" max="100" value="75" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Branch / Department *</label>
+            <select id="alloc-subj-branch" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Target Class *</label>
+            <select id="alloc-class-select" required onchange="handleClassSelectForAllocation(this.value)" class="w-full px-3.5 py-2 rounded-xl border border-brand-300 bg-brand-50/40 text-brand-950 font-bold focus:ring-2 focus:ring-brand-500">
+              <option value="" disabled selected>-- Select Class to Allocate --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Semester *</label>
+            <select id="alloc-subj-sem" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+              <option value="3">Sem 3</option>
+              <option value="4" selected>Sem 4</option>
+              <option value="5">Sem 5</option>
+              <option value="6">Sem 6</option>
+              <option value="7">Sem 7</option>
+              <option value="8">Sem 8</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Section *</label>
+            <select id="alloc-subj-sec" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+              <option value="A" selected>Section A</option>
+              <option value="B">Section B</option>
+              <option value="C">Section C</option>
+              <option value="D">Section D</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Planned Hours</label>
+            <input type="number" id="alloc-subj-hours" value="45" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-semibold focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Description / Course Outline</label>
+          <textarea id="alloc-subj-desc" rows="2" placeholder="Course objectives, textbooks, syllabus outline..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <!-- Class-Wise Student Selection Table -->
+        <div id="alloc-students-container" class="border border-slate-200 rounded-xl overflow-hidden hidden">
+          <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="alloc-select-all" onchange="toggleSelectAllAllocStudents(this.checked)" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+              <label for="alloc-select-all" class="font-bold text-slate-800 cursor-pointer">Select All Students</label>
+              <span id="alloc-selected-count-badge" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">0 selected</span>
+            </div>
+            <input type="text" id="alloc-student-search" placeholder="Filter class students..." oninput="filterAllocClassStudents()" class="px-3 py-1 rounded-lg border border-slate-200 text-xs">
+          </div>
+          <div class="max-h-48 overflow-y-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-white border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold sticky top-0">
+                <tr>
+                  <th class="p-2 w-10 text-center"></th>
+                  <th class="p-2">USN</th>
+                  <th class="p-2">Student Name</th>
+                  <th class="p-2">Roll No</th>
+                </tr>
+              </thead>
+              <tbody id="alloc-students-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated from class selection -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('faculty-allocate-subject-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">Cancel</button>
+          <button type="submit" id="fac-submit-alloc-btn" class="px-5 py-2 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-md transition">Allocate Subject & Enroll Students</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/faculty.js"></script>
+</body>
+</html>

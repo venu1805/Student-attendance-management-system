@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartAttend — Student Attendance Management System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Top Institutional Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-900 text-white flex items-center justify-center font-black text-xl shadow-md tracking-tighter">
+          SA
+        </div>
+        <div>
+          <span class="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            SmartAttend
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-200">ERP 2.0</span>
+          </span>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Track Attendance. Stay Eligible. Stay Informed.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs font-semibold text-slate-600">
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Academic Term: 2026-2027 (Sem 5)
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Hero & Login Split View -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col lg:flex-row items-center justify-center gap-12">
+    
+    <!-- Left Hero Context -->
+    <div class="flex-1 max-w-xl text-left">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold mb-4">
+        <span>🎓 Official College Attendance Management System</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+        Track Attendance. <br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">Stay Eligible.</span> <br>
+        Stay Informed.
+      </h1>
+      <p class="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+        SmartAttend provides college students, faculty members, heads of departments, and administrators with automated attendance tracking, instant minimum requirement forecasting, and an official permission approval portal.
+      </p>
+
+      <!-- Key Value Pillars -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8">
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white/70 shadow-sm flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">🎯</div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Required Classes Calculator</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5">Know exactly how many consecutive classes you must attend to stay above 75%.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white/70 shadow-sm flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">📝</div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Permission Request Portal</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5">Submit medical or duty leave proofs with document upload and faculty approval.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white/70 shadow-sm flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm shrink-0">⚡</div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Defaulter Warning System</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5">Automatic alert notifications before students risk semester examination debarment.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white/70 shadow-sm flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shrink-0">🛡️</div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Multi-Tier HOD Workflow</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5">Seamless escalation from faculty to HOD with persistent institutional audit trails.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Login Card & 1-Click Demo Switcher -->
+    <div class="w-full max-w-md">
+      <div class="erp-card bg-white p-6 sm:p-8 border border-slate-200 shadow-xl rounded-2xl">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">Institutional Sign In</h2>
+          <p class="text-xs text-slate-500 mt-1">Access your role-specific dashboard with college credentials.</p>
+        </div>
+
+        <!-- Error/Alert Banner -->
+        <div id="login-error-banner" class="hidden p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-medium mb-4 flex items-start gap-2">
+          <span class="font-bold text-rose-600">✗</span>
+          <span id="login-error-msg">Invalid credentials</span>
+        </div>
+
+        <!-- Form -->
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Official Email</label>
+            <input type="email" id="login-email" required placeholder="user@college.edu" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+              <button type="button" onclick="showForgotPassword()" class="text-xs font-semibold text-brand-600 hover:text-brand-800 transition">Forgot?</button>
+            </div>
+            <div class="relative">
+              <input type="password" id="login-password" required placeholder="••••••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+              <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-semibold">
+                Show
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
+              <input type="checkbox" id="remember-me" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+              Remember me
+            </label>
+            <span class="text-slate-400">VTU Affiliated ERP</span>
+          </div>
+
+          <button type="submit" id="login-submit-btn" class="w-full py-2.5 px-4 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-sm shadow-md transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+            <span>Sign In to Portal</span>
+          </button>
+        </form>
+
+        <!-- 1-Click Demo Login Section -->
+        <div class="mt-6 pt-5 border-t border-slate-100">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">1-Click Demo Switcher</span>
+            <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">All Passwords: password123</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Student CSE -->
+            <button onclick="quickDemoLogin('STUDENT')" class="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">ST</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">Student (CSE)</div>
+                <div class="text-[10px] text-emerald-800 truncate">Rahul (4SJ22CS045)</div>
+              </div>
+            </button>
+
+            <!-- Student AI&DS -->
+            <button onclick="quickDemoLogin('STUDENT_AIDS')" class="p-2.5 rounded-xl border border-teal-200 bg-teal-50/60 hover:bg-teal-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0">AI</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">Student (AI&DS)</div>
+                <div class="text-[10px] text-teal-800 truncate">Venu (4SJ23AI012)</div>
+              </div>
+            </button>
+
+            <!-- Faculty -->
+            <button onclick="quickDemoLogin('FACULTY')" class="p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">FA</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">Faculty Portal</div>
+                <div class="text-[10px] text-blue-800 truncate">Prof. Arvind Kumar</div>
+              </div>
+            </button>
+
+            <!-- HOD CSE -->
+            <button onclick="quickDemoLogin('HOD')" class="p-2.5 rounded-xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0">HD</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">HOD (CSE)</div>
+                <div class="text-[10px] text-purple-800 truncate">Dr. Rajesh Sharma</div>
+              </div>
+            </button>
+
+            <!-- HOD AI&DS -->
+            <button onclick="quickDemoLogin('HOD_AIDS')" class="p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">HD</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">HOD (AI&DS)</div>
+                <div class="text-[10px] text-indigo-800 truncate">Dr. K. S. Rao</div>
+              </div>
+            </button>
+
+            <!-- Admin -->
+            <button onclick="quickDemoLogin('ADMIN')" class="p-2.5 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100/70 text-left transition flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shrink-0">AD</div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">Admin Portal</div>
+                <div class="text-[10px] text-rose-800 truncate">ERP Administrator</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Institutional Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <strong>SmartAttend ERP</strong> — College Student Attendance Management System &copy; 2026.
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-slate-400">
+        <span>VTU Regulations Compliant</span>
+        <span>•</span>
+        <span>75% Minimum Mandatory Threshold</span>
+        <span>•</span>
+        <span>Audit Trail Enabled</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Forgot Password Recovery Modal -->
+  <div id="forgot-password-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Institutional Password Recovery</h3>
+          <p class="text-xs text-slate-500">Identity-verified password reset via OTP</p>
+        </div>
+        <button onclick="closeForgotPassword()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Error Banner -->
+        <div id="forgot-error-banner" class="hidden p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-medium"></div>
+
+        <!-- Step 1: Request OTP -->
+        <div id="forgot-step-1" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Registered Official Email</label>
+            <input type="email" id="forgot-email" placeholder="student@college.edu" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-brand-500">
+          </div>
+          <button type="button" onclick="requestPasswordOtp()" id="forgot-request-btn" class="w-full py-2.5 bg-brand-900 hover:bg-brand-800 text-white font-bold rounded-xl text-xs shadow-sm transition">
+            Generate Verification Code (OTP)
+          </button>
+        </div>
+
+        <!-- Step 2: Enter OTP & New Password -->
+        <div id="forgot-step-2" class="space-y-4 hidden">
+          <!-- OTP Simulation Box -->
+          <div id="otp-preview-card" class="p-3.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs">
+            <span class="font-bold block">🔑 Campus OTP Simulator:</span>
+            <span class="text-slate-700">Your verification OTP is: </span>
+            <strong id="otp-code-display" class="font-mono text-base font-black text-amber-700 tracking-wider"></strong>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Enter 6-Digit OTP *</label>
+            <input type="text" id="forgot-otp" placeholder="123456" maxlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold tracking-widest text-center focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">New Password *</label>
+            <input type="password" id="forgot-new-pwd" placeholder="Min 8 chars with upper, lower, digit, symbol" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Confirm New Password *</label>
+            <input type="password" id="forgot-confirm-pwd" placeholder="Re-type new password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <button type="button" onclick="submitPasswordReset()" id="forgot-submit-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition">
+            Set New Password & Return to Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script>
+    // Password visibility toggle
+    function togglePasswordVisibility() {
+      const pwd = document.getElementById('login-password');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+      } else {
+        pwd.type = 'password';
+      }
+    }
+
+    function showForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.remove('hidden');
+      document.getElementById('forgot-password-modal').classList.add('flex');
+      document.getElementById('forgot-step-1').classList.remove('hidden');
+      document.getElementById('forgot-step-2').classList.add('hidden');
+      document.getElementById('forgot-error-banner').classList.add('hidden');
+    }
+
+    function closeForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.add('hidden');
+      document.getElementById('forgot-password-modal').classList.remove('flex');
+    }
+
+    let activeResetEmail = '';
+    async function requestPasswordOtp() {
+      const email = document.getElementById('forgot-email').value.trim();
+      const errBanner = document.getElementById('forgot-error-banner');
+      const btn = document.getElementById('forgot-request-btn');
+
+      if (!email) {
+        errBanner.textContent = 'Please enter your registered college email.';
+        errBanner.classList.remove('hidden');
+        return;
+      }
+
+      errBanner.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Sending OTP...';
+
+      try {
+        const res = await API.post('/api/auth/forgot-password/request', { email });
+        activeResetEmail = email;
+        document.getElementById('forgot-step-1').classList.add('hidden');
+        document.getElementById('forgot-step-2').classList.remove('hidden');
+        document.getElementById('otp-code-display').textContent = res.otp_preview || 'CHECK LOGS';
+      } catch (err) {
+        errBanner.textContent = err.message || 'Email not found in institutional directory.';
+        errBanner.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate Verification Code (OTP)';
+      }
+    }
+
+    async function submitPasswordReset() {
+      const otp = document.getElementById('forgot-otp').value.trim();
+      const newPassword = document.getElementById('forgot-new-pwd').value;
+      const confirmPassword = document.getElementById('forgot-confirm-pwd').value;
+      const errBanner = document.getElementById('forgot-error-banner');
+      const btn = document.getElementById('forgot-submit-btn');
+
+      if (!otp || !newPassword || !confirmPassword) {
+        errBanner.textContent = 'Please complete all required fields.';
+        errBanner.classList.remove('hidden');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        errBanner.textContent = 'New passwords do not match.';
+        errBanner.classList.remove('hidden');
+        return;
+      }
+
+      errBanner.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Resetting Password...';
+
+      try {
+        const res = await API.post('/api/auth/forgot-password/reset', {
+          email: activeResetEmail,
+          otp: otp,
+          new_password: newPassword,
+          confirm_password: confirmPassword
+        });
+
+        alert('Password updated successfully! You can now sign in with your new password.');
+        closeForgotPassword();
+        document.getElementById('login-email').value = activeResetEmail;
+        document.getElementById('login-password').value = newPassword;
+      } catch (err) {
+        errBanner.textContent = err.message || 'Failed to reset password.';
+        errBanner.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Set New Password & Return to Login';
+      }
+    }
+
+    // Standard Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+      const submitBtn = document.getElementById('login-submit-btn');
+      const errBanner = document.getElementById('login-error-banner');
+      const errMsg = document.getElementById('login-error-msg');
+
+      errBanner.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Signing In...';
+
+      try {
+        const res = await API.post('/api/auth/login', {
+          email,
+          password,
+          remember_me: rememberMe
+        });
+
+        API.setToken(res.token);
+        API.setUser(res.user);
+        window.location.href = res.redirect_url || '/';
+
+      } catch (err) {
+        errMsg.textContent = err.message || 'Invalid email or password.';
+        errBanner.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Sign In to Portal';
+      }
+    });
+
+    // 1-Click Demo Login
+    async function quickDemoLogin(role) {
+      const errBanner = document.getElementById('login-error-banner');
+      const errMsg = document.getElementById('login-error-msg');
+      errBanner.classList.add('hidden');
+
+      try {
+        const res = await API.post('/api/auth/quick-demo', { role });
+        API.setToken(res.token);
+        API.setUser(res.user);
+        window.location.href = res.redirect_url || '/';
+      } catch (err) {
+        errMsg.textContent = err.message || 'Demo login failed.';
+        errBanner.classList.remove('hidden');
+      }
+    }
+
+    // Check URL parameters for errors
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('msg') === 'auth_required') {
+      showToast('Please sign in to access your portal.', 'warning');
+    } else if (params.get('error') === 'unauthorized_portal') {
+      showToast('You do not have permission to access that portal.', 'error');
+    }
+  </script>
+</body>
+</html>

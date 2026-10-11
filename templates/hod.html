@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOD Portal — SmartAttend ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="sidebar-mobile-toggle" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-purple-800 text-white flex items-center justify-center font-black text-lg shadow-sm">
+          SA
+        </div>
+        <div>
+          <span class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            SmartAttend
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">HOD Portal</span>
+          </span>
+          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Head of Department Executive View</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell Dropdown -->
+        <div class="relative">
+          <button id="notif-bell-btn" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span id="notif-badge" class="hidden absolute top-1 right-1 px-1.5 py-0.2 bg-rose-600 text-white text-[10px] font-bold rounded-full border-2 border-white">0</span>
+          </button>
+          <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 erp-card bg-white border border-slate-200 shadow-xl rounded-2xl z-50 overflow-hidden">
+            <div class="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">HOD Notifications</h3>
+              <button onclick="markAllNotifsRead()" class="text-[11px] font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+            </div>
+            <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-slate-100"></div>
+          </div>
+        </div>
+
+        <!-- HOD Profile Pill -->
+        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+          <div id="hod-avatar-initials" class="w-8 h-8 rounded-full bg-purple-700 text-white flex items-center justify-center font-bold text-xs">HD</div>
+          <div class="hidden sm:block text-left">
+            <div id="hod-header-name" class="text-xs font-bold text-slate-900 leading-tight">Head of Department</div>
+            <div id="hod-header-title" class="text-[10px] text-slate-500">Department Chair</div>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition" title="Sign Out">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+  <!-- Layout Body -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex gap-6">
+
+    <!-- Sidebar -->
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-40 transform -translate-x-full md:relative md:translate-x-0 md:border-r-0 md:bg-transparent md:w-56 shrink-0 transition-transform duration-200 ease-in-out">
+      <div class="h-full flex flex-col justify-between p-4 md:p-0">
+        <nav class="space-y-1.5">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Department Menu</div>
+          
+          <a href="#dashboard" data-hod-tab-target="hod-tab-dashboard" class="sidebar-link active">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            Overview
+          </a>
+
+          <a href="#escalated-permissions" data-hod-tab-target="hod-tab-permissions" class="sidebar-link">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Escalated Requests
+          </a>
+
+          <a href="#low-attendance" data-hod-tab-target="hod-tab-low" class="sidebar-link">
+            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Low Attendance List
+          </a>
+
+          <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Account</div>
+          <button onclick="handleLogout()" class="sidebar-link w-full text-rose-600 hover:bg-rose-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Sign Out
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 space-y-6">
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: OVERVIEW -->
+      <!-- ============================================================ -->
+      <section id="hod-tab-dashboard" class="hod-tab-view space-y-6">
+        <div>
+          <h1 id="hod-dept-name" class="text-2xl font-black text-slate-900 tracking-tight">Department of Computer Science & Engineering</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Head of Department Portal • Monitor faculty conduction and evaluate escalated student leave appeals.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Faculty Count</span>
+            <div id="hod-kpi-faculty" class="text-3xl font-black text-slate-900 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">Teaching staff</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Students</span>
+            <div id="hod-kpi-students" class="text-3xl font-black text-blue-600 mt-2">--</div>
+            <span id="hod-kpi-branch-label" class="text-[11px] text-slate-400">Enrolled Students</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Average Attendance</span>
+            <div id="hod-kpi-avg-att" class="text-3xl font-black text-emerald-600 mt-2">--%</div>
+            <span class="text-[11px] text-slate-400">Department mean</span>
+          </div>
+
+          <div class="erp-card p-4">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Low Attendance</span>
+            <div id="hod-kpi-low-att" class="text-3xl font-black text-rose-600 mt-2">--</div>
+            <span class="text-[11px] text-slate-400">&lt; 75% threshold</span>
+          </div>
+
+          <div class="erp-card p-4 bg-purple-50/50 border-purple-200 col-span-2 sm:col-span-1">
+            <span class="text-xs font-bold text-purple-900 uppercase tracking-wider block">Escalated Slips</span>
+            <div id="hod-kpi-escalated" class="text-3xl font-black text-purple-700 mt-2">--</div>
+            <span class="text-[11px] text-purple-700 font-semibold">Requires HOD Action</span>
+          </div>
+        </div>
+
+        <!-- Fast Action Banner -->
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-purple-900 to-indigo-950 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">HOD Action Queue</span>
+            <h3 class="text-lg font-bold mt-1">Review escalated leave requests & defaulter notices</h3>
+            <p class="text-xs text-purple-200 mt-0.5">Faculty members have forwarded permission requests that require departmental discretion.</p>
+          </div>
+          <button onclick="document.querySelector('[data-hod-tab-target=\'hod-tab-permissions\']').click()" class="px-5 py-2.5 bg-white hover:bg-purple-50 text-purple-950 font-bold rounded-xl text-xs shadow-md transition shrink-0">
+            Open Escalated Requests →
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: ESCALATED PERMISSION REQUESTS -->
+      <!-- ============================================================ -->
+      <section id="hod-tab-permissions" class="hod-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Escalated Permission Requests</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Approve or reject permission requests escalated by faculty for discretionary institutional authorization.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">Request ID</th>
+                  <th class="px-4 py-3.5">Student</th>
+                  <th class="px-4 py-3.5">Subject</th>
+                  <th class="px-4 py-3.5">Session</th>
+                  <th class="px-4 py-3.5">Reason</th>
+                  <th class="px-4 py-3.5">Faculty Escalation Note</th>
+                  <th class="px-4 py-3.5 text-right">HOD Action</th>
+                </tr>
+              </thead>
+              <tbody id="hod-permissions-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: LOW ATTENDANCE WATCHLIST -->
+      <!-- ============================================================ -->
+      <section id="hod-tab-low" class="hod-tab-view space-y-6 hidden">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Department Defaulter Watchlist (&lt; 75%)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Students with overall or subject attendance below minimum. Issue official department notices with one click.</p>
+        </div>
+
+        <div class="erp-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <th class="px-4 py-3.5">USN</th>
+                  <th class="px-4 py-3.5">Student Name</th>
+                  <th class="px-4 py-3.5">Class</th>
+                  <th class="px-4 py-3.5 text-center">Attended / Total</th>
+                  <th class="px-4 py-3.5 text-center">Percentage</th>
+                  <th class="px-4 py-3.5 text-center">Recovery Need</th>
+                  <th class="px-4 py-3.5 text-right">Official Action</th>
+                </tr>
+              </thead>
+              <tbody id="hod-low-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- HOD Review Modal -->
+  <div id="hod-review-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 id="hod-review-title" class="text-base font-bold text-slate-900">HOD Discretionary Decision</h3>
+        <button onclick="closeModal('hod-review-modal')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div id="hod-review-details" class="space-y-3">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Official HOD Remarks *</label>
+          <textarea id="hod-review-remarks" rows="2" placeholder="Enter official HOD sanction or rejection reasons..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-500 leading-relaxed"></textarea>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="submitHodDecision('APPROVE')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
+          ✓ Approve & Credit Attendance
+        </button>
+        <button onclick="submitHodDecision('REJECT')" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
+          ✗ Reject Appeal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/hod.js"></script>
+</body>
+</html>
