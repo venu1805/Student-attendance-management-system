@@ -45,7 +45,7 @@ function renderStudentHeader(student) {
   const detailsEl = document.getElementById('student-meta-details');
   if (nameEl) nameEl.textContent = `Welcome back, ${student.name}`;
   if (detailsEl) {
-    detailsEl.textContent = `USN: ${student.usn} • ${student.department_code} • Sem ${student.semester} - Sec ${student.section} • AY ${student.academic_year}`;
+    detailsEl.textContent = `USN: ${student.usn} • ${student.branch_code} • Sem ${student.semester} - Sec ${student.section} • AY ${student.academic_year}`;
   }
 
   // Top pill
