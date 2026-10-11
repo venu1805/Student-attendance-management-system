@@ -4,8 +4,8 @@
 :root {
   --primary: #1e3a8a;       /* Academic Navy */
   --primary-hover: #1e40af;
-  --secondary: #4f46e5;     /* Royal Indigo */
-  --accent: #0ea5e9;        /* Sky Blue */
+  --secondary: #0f766e;     /* Academic Teal */
+  --accent: #65a30d;        /* Attendance Lime */
   --surface: #ffffff;
   --bg-slate: #f8fafc;
   --border-slate: #e2e8f0;
@@ -13,21 +13,52 @@
 
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8fafc;
+  background: linear-gradient(180deg, #f8fbfa 0%, #f1f5f4 100%);
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(13, 148, 136, 0.55);
+  outline-offset: 2px;
 }
 
 .font-mono-code {
   font-family: 'JetBrains Mono', monospace;
 }
 
+.portal-header-brand,
+.portal-header-actions {
+  min-width: 0;
+}
+
+.portal-header-brand > div:last-child {
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  .portal-header-inner {
+    gap: 0.5rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .portal-header-brand,
+  .portal-header-actions {
+    gap: 0.5rem;
+  }
+
+  .portal-role-label {
+    display: none;
+  }
+}
+
 /* Glass & Card Effects */
 .erp-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 5px 16px rgba(15, 23, 42, 0.025);
   transition: all 0.2s ease-in-out;
 }
 
@@ -60,9 +91,20 @@ body {
 }
 
 .sidebar-link.active {
-  background-color: #eff6ff;
-  color: #1d4ed8;
+  background-color: #e8f5f2;
+  color: #0f766e;
   font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Status Badges */

@@ -35,6 +35,28 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
 app.teardown_appcontext(close_db)
 
 
+@app.context_processor
+def inject_academic_settings():
+    try:
+        with get_db() as conn:
+            c = conn.cursor()
+            c.execute("""
+                SELECT academic_year, current_semester, minimum_attendance_percentage
+                FROM academic_settings
+                ORDER BY id DESC LIMIT 1
+            """)
+            row = c.fetchone()
+            if row:
+                return {"academic_settings": dict(row)}
+    except Exception:
+        pass
+    return {"academic_settings": {
+        "academic_year": "2026-2027",
+        "current_semester": 5,
+        "minimum_attendance_percentage": 75.0
+    }}
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -749,7 +771,7 @@ def api_class_students(class_id):
 # Faculty Student Addition API
 # --------------------------------------------------------------------------
 
-@app.route("/api/faculty/students", methods=["POST"])
+@app.route("/api/faculty/students", methods=["GET", "POST"])
 @require_roles("FACULTY", "HOD", "ADMIN")
 def api_faculty_add_student():
     """
@@ -758,6 +780,29 @@ def api_faculty_add_student():
     - Automatically links student to branch and class master data
     - Returns initial credentials securely for display/sharing with the student
     """
+    if request.method == "GET":
+        query = """
+            SELECT st.id as student_id, st.usn, st.semester, st.section,
+                   st.academic_year, st.phone, st.roll_no,
+                   u.name, u.email, u.status, u.avatar_url,
+                   b.branch_name, b.branch_code, cls.class_name
+            FROM students st
+            JOIN users u ON st.user_id = u.id
+            JOIN branches b ON st.branch_id = b.id
+            LEFT JOIN classes cls ON st.class_id = cls.id
+        """
+        params = []
+        if g.current_user["role"] == "HOD":
+            query += " WHERE st.branch_id = ?"
+            params.append(g.current_user["branch_id"])
+        query += " ORDER BY st.usn ASC"
+
+        with get_db() as conn:
+            c = conn.cursor()
+            c.execute(query, params)
+            students = [dict(row) for row in c.fetchall()]
+        return jsonify({"students": students, "total_count": len(students)})
+
     data = request.get_json() or {}
     name = data.get("name", "").strip()
     usn = data.get("usn", "").strip().upper()

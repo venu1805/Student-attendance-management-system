@@ -454,6 +454,22 @@ class TestSmartAttendFull(unittest.TestCase):
         actions = [a["action"] for a in act_data["activity"]]
         self.assertTrue(any(a in ("UPDATE_PROFILE", "UPDATE_AVATAR", "CHANGE_PASSWORD") for a in actions))
 
+    def test_14_faculty_student_directory_read_scope(self):
+        """Test directory fields and preserve HOD branch isolation."""
+        faculty_token = create_token(3, "FACULTY", "faculty@college.edu", "Prof. Arvind Kumar")
+        faculty_res = self.app.get("/api/faculty/students", headers={"Authorization": f"Bearer {faculty_token}"})
+        self.assertEqual(faculty_res.status_code, 200)
+        faculty_data = faculty_res.get_json()
+        self.assertGreater(faculty_data["total_count"], 0)
+        self.assertIn("class_name", faculty_data["students"][0])
+        self.assertIn("branch_code", faculty_data["students"][0])
+
+        hod_token = create_token(2, "HOD", "hod@college.edu", "Dr. Rajesh Sharma")
+        hod_res = self.app.get("/api/faculty/students", headers={"Authorization": f"Bearer {hod_token}"})
+        self.assertEqual(hod_res.status_code, 200)
+        for student in hod_res.get_json()["students"]:
+            self.assertEqual(student["branch_code"], "CSE")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -30,8 +30,8 @@
 
   <!-- Top Navbar -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
+    <div class="portal-header-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="portal-header-brand flex items-center gap-3">
         <button id="sidebar-mobile-toggle" class="p-2 -ml-2 text-slate-600 hover:text-slate-900 md:hidden">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
@@ -41,14 +41,14 @@
         <div>
           <span class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
             SmartAttend
-            <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Student Portal</span>
+            <span class="portal-role-label text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Student Portal</span>
           </span>
-          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Semester 5 • 2026-2027</p>
+          <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Semester {{ user.student.semester if user.student is defined else '—' }} • {{ user.student.academic_year if user.student is defined else 'Academic Year' }}</p>
         </div>
       </div>
 
       <!-- Right Nav Items -->
-      <div class="flex items-center gap-3">
+      <div class="portal-header-actions flex items-center gap-3">
         <!-- Notification Bell Dropdown -->
         <div class="relative">
           <button id="notif-bell-btn" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition relative">
