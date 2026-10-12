@@ -99,6 +99,16 @@ def resolve_or_create_class(conn, branch_id: int, semester: int, section: str, a
     return cursor.lastrowid
 
 
+def enroll_student_in_class(conn, student_id: int, class_id: int, academic_year: str) -> None:
+    """Enroll a student in every subject currently assigned to their class."""
+    conn.execute("""
+        INSERT OR IGNORE INTO student_subjects (student_id, subject_id, faculty_subject_id, academic_year)
+        SELECT ?, subject_id, id, academic_year
+        FROM faculty_subjects
+        WHERE class_id = ? AND academic_year = ?
+    """, (student_id, class_id, academic_year))
+
+
 # --------------------------------------------------------------------------
 # Frontend Page Routes (Protected by Auth & Role)
 # --------------------------------------------------------------------------
@@ -854,6 +864,7 @@ def api_faculty_add_student():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (user_id, usn, branch_id, class_id, semester, section, academic_year, phone, roll_no))
         student_id = c.lastrowid
+        enroll_student_in_class(conn, student_id, class_id, academic_year)
 
         # Fetch class name and branch name for response
         c.execute("SELECT class_name FROM classes WHERE id = ?", (class_id,))
@@ -1097,23 +1108,44 @@ def api_student_dashboard():
         """, (student_id,))
         student_info = dict(c.fetchone())
 
-        # Subject-wise attendance breakdown (ONLY subjects allocated to this student!)
+        # Resolve subjects from enrollment records and current class allocations.
         c.execute("""
+            WITH student_class AS (
+                SELECT id, branch_id, semester, class_id, academic_year
+                FROM students
+                WHERE id = ?
+            ), candidate_links AS (
+                SELECT ss.subject_id, ss.faculty_subject_id
+                FROM student_subjects ss
+                JOIN student_class st ON st.id = ss.student_id
+                WHERE ss.academic_year = st.academic_year
+                UNION ALL
+                SELECT fs.subject_id, fs.id
+                FROM faculty_subjects fs
+                JOIN student_class st ON st.class_id = fs.class_id
+                    AND st.academic_year = fs.academic_year
+            ), candidate_subjects AS (
+                SELECT links.subject_id, MIN(links.faculty_subject_id) AS faculty_subject_id
+                FROM candidate_links links
+                JOIN subjects eligible ON eligible.id = links.subject_id
+                JOIN student_class st ON eligible.branch_id = st.branch_id
+                    AND eligible.semester = st.semester
+                GROUP BY links.subject_id
+            )
             SELECT s.id as subject_id, s.subject_code, s.subject_name, s.credits, s.subject_type,
                    fu.name as faculty_name,
                    COUNT(a.id) as conducted,
                    SUM(CASE WHEN a.status IN ('PRESENT', 'APPROVED_PERMISSION') THEN 1 ELSE 0 END) as attended,
                    SUM(CASE WHEN a.status = 'ABSENT' THEN 1 ELSE 0 END) as absent
-            FROM student_subjects ss
-            JOIN subjects s ON ss.subject_id = s.id
-            LEFT JOIN faculty_subjects fs ON ss.faculty_subject_id = fs.id
+            FROM candidate_subjects cs
+            JOIN subjects s ON cs.subject_id = s.id
+            LEFT JOIN faculty_subjects fs ON cs.faculty_subject_id = fs.id
             LEFT JOIN faculty f ON fs.faculty_id = f.id
             LEFT JOIN users fu ON f.user_id = fu.id
-            LEFT JOIN attendance a ON a.student_id = ss.student_id AND a.subject_id = s.id
-            WHERE ss.student_id = ?
+            LEFT JOIN attendance a ON a.student_id = ? AND a.subject_id = s.id
             GROUP BY s.id
             ORDER BY s.subject_code ASC
-        """, (student_id,))
+        """, (student_id, student_id))
         subject_rows = c.fetchall()
 
         subjects_data = []
@@ -2068,6 +2100,7 @@ def api_admin_transfer_student(student_id):
             SET branch_id = ?, class_id = ?, semester = ?, section = ?, academic_year = ?
             WHERE id = ?
         """, (new_branch_id, new_class_id, new_semester, new_section, academic_year, student_id))
+        enroll_student_in_class(conn, student_id, new_class_id, academic_year)
 
         c.execute("SELECT class_name FROM classes WHERE id = ?", (new_class_id,))
         new_c_name = c.fetchone()["class_name"]

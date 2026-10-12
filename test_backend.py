@@ -102,6 +102,19 @@ class TestSmartAttendFull(unittest.TestCase):
         })
         self.assertEqual(login_res.status_code, 200)
 
+        student_token = create_token(
+            data["student"]["user_id"], "STUDENT", data["student"]["email"], data["student"]["name"]
+        )
+        dashboard = self.app.get(
+            "/api/student/dashboard",
+            headers={"Authorization": f"Bearer {student_token}"}
+        )
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertEqual(
+            {subject["subject_code"] for subject in dashboard.get_json()["subjects"]},
+            {"21AD52", "21AD53", "21AD54"}
+        )
+
     def test_05_class_student_roster_shared_between_faculty(self):
         """Test class roster availability and allocation across multiple faculty."""
         fac_a_token = create_token(3, "FACULTY", "faculty@college.edu", "Prof. Arvind Kumar")

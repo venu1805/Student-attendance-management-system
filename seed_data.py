@@ -376,7 +376,9 @@ def seed_database():
             (6, 7, 8, 1),  # Prof Sneha  -> 21AD53 for Class 1 (4 AI&DS A)
             (7, 7, 9, 1),  # Prof Sneha  -> 21AD54 for Class 1 (4 AI&DS A)
             (8, 5, 10, 3), # Dr Anita   -> EC501 for Class 3 (5 ECE A)
-            (9, 5, 11, 3)  # Dr Anita   -> EC502 for Class 3 (5 ECE A)
+            (9, 5, 11, 3), # Dr Anita   -> EC502 for Class 3 (5 ECE A)
+            (10, 3, 5, 2), # Prof Priya -> CS505 for Class 2 (5 CSE A)
+            (11, 4, 6, 2)  # Prof Suresh -> CS506 for Class 2 (5 CSE A)
         ]
         for fs_id, fac_id, sub_id, cls_id in faculty_subject_allocations:
             cursor.execute("""

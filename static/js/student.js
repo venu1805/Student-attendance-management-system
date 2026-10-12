@@ -5,6 +5,8 @@
 
 let studentDashboardData = null;
 let currentSelectedSubject = null;
+let attendanceCalendarData = {};
+let attendanceCalendarMonth = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadStudentDashboard();
@@ -28,7 +30,6 @@ async function loadStudentDashboard() {
     renderKpiCards(data.overall);
     renderLowAttendanceWarning(data.subjects, data.overall.minimum_required);
     renderSubjectsTable(data.subjects);
-    renderRecentPermissions(data.recent_permissions);
     populateCalculatorSubjectDropdown(data.subjects, data.overall);
     updateCalculatorMath();
     await loadAttendanceCalendar();
@@ -237,15 +238,20 @@ function renderLowAttendanceWarning(subjects, minPct) {
 
 // 6. Subject-Wise Attendance Table
 function renderSubjectsTable(subjects) {
-  const tbody = document.getElementById('subjects-table-body');
-  if (!tbody) return;
+  const tableBodies = [
+    document.getElementById('subjects-table-body'),
+    document.getElementById('subjects-table-body-full')
+  ].filter(Boolean);
+  if (tableBodies.length === 0) return;
 
   if (subjects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-sm text-slate-500">No enrolled subjects found.</td></tr>`;
+    tableBodies.forEach(tbody => {
+      tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-sm text-slate-500">No subjects are assigned to your class yet. Contact your faculty or department administrator.</td></tr>`;
+    });
     return;
   }
 
-  tbody.innerHTML = subjects.map(s => {
+  const rows = subjects.map(s => {
     let statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
     let statusLabel = 'Good';
     if (s.status.level === 'warning') {
@@ -287,6 +293,9 @@ function renderSubjectsTable(subjects) {
       </tr>
     `;
   }).join('');
+  tableBodies.forEach(tbody => {
+    tbody.innerHTML = rows;
+  });
 }
 
 // 7. Subject Attendance Details Modal
@@ -472,14 +481,44 @@ async function loadAttendanceCalendar() {
 
   try {
     const data = await API.get('/api/student/calendar');
-    const calMap = data.calendar || {};
+    attendanceCalendarData = data.calendar || {};
+    const recordedDates = Object.keys(attendanceCalendarData).sort();
+    const initialDate = recordedDates[recordedDates.length - 1];
+    const initialMonth = initialDate ? new Date(`${initialDate}T00:00:00`) : new Date();
+    attendanceCalendarMonth = new Date(initialMonth.getFullYear(), initialMonth.getMonth(), 1);
+    renderAttendanceCalendar();
+  } catch (err) {
+    console.error('Failed to load calendar:', err);
+    container.innerHTML = '<div class="col-span-7 p-6 text-center text-sm text-rose-500">Failed to load attendance calendar.</div>';
+  }
+}
 
-    // Generate days for September 2026 (Sept 1 to Sept 30)
+function changeAttendanceCalendarMonth(offset) {
+  if (!attendanceCalendarMonth) return;
+  attendanceCalendarMonth.setMonth(attendanceCalendarMonth.getMonth() + offset);
+  renderAttendanceCalendar();
+}
+
+function renderAttendanceCalendar() {
+  const container = document.getElementById('calendar-grid');
+  const label = document.getElementById('calendar-month-label');
+  if (!container || !attendanceCalendarMonth) return;
+
+  const year = attendanceCalendarMonth.getFullYear();
+  const month = attendanceCalendarMonth.getMonth();
+  const monthLabel = attendanceCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  if (label) label.textContent = monthLabel;
+
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
     let gridHtml = '';
-    for (let day = 1; day <= 30; day++) {
-      const dateStr = `2026-09-${day < 10 ? '0' + day : day}`;
-      const dayData = calMap[dateStr];
-      const dateObj = new Date(2026, 8, day);
+    for (let blank = 0; blank < firstWeekday; blank++) {
+      gridHtml += '<div aria-hidden="true"></div>';
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayData = attendanceCalendarData[dateStr];
+      const dateObj = new Date(year, month, day);
       const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
 
       let dotHtml = '';
@@ -513,11 +552,7 @@ async function loadAttendanceCalendar() {
       `;
     }
 
-    container.innerHTML = gridHtml;
-
-  } catch (err) {
-    console.error('Failed to load calendar:', err);
-  }
+  container.innerHTML = gridHtml;
 }
 
 async function openDayCalendarModal(dateStr) {
@@ -531,8 +566,7 @@ async function openDayCalendarModal(dateStr) {
   openModal('day-calendar-modal');
 
   try {
-    const data = await API.get('/api/student/calendar');
-    const dayData = (data.calendar || {})[dateStr];
+    const dayData = attendanceCalendarData[dateStr];
 
     if (!dayData || !dayData.sessions || dayData.sessions.length === 0) {
       bodyEl.innerHTML = `

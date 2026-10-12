@@ -383,7 +383,7 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-black text-slate-900">Attendance Calendar View</h2>
-            <p class="text-xs text-slate-500 mt-0.5">September 2026 academic timeline. Click on any date to inspect session hours.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Browse recorded attendance by month. Select a date to inspect session hours.</p>
           </div>
           <div class="flex items-center gap-3 text-xs font-medium">
             <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Present</span>
@@ -394,8 +394,9 @@
 
         <div class="erp-card p-6 bg-white border border-slate-200">
           <div class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
-            <span>September 2026</span>
-            <span class="text-xs text-slate-400">Current Semester</span>
+            <button type="button" onclick="changeAttendanceCalendarMonth(-1)" aria-label="Previous month" title="Previous month" class="px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100">&larr;</button>
+            <span id="calendar-month-label">Attendance</span>
+            <button type="button" onclick="changeAttendanceCalendarMonth(1)" aria-label="Next month" title="Next month" class="px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100">&rarr;</button>
           </div>
           <div id="calendar-grid" class="grid grid-cols-7 gap-2.5">
             <!-- Dynamically populated with 30 days -->
